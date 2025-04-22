@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "picosha2.h"
+#include "BigInt.hpp"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -14,12 +15,12 @@ class Account {
     public:
         string phone;
         string pin;
-        long long int balance;
+        BigInt balance;
     
         Account(string p, string hashed_pin) {
             phone = p;
             pin = hashed_pin;
-            balance = 0;
+            balance = BigInt("0");
         }
     
         bool check_pin(const string& input_pin) {
@@ -73,7 +74,7 @@ public:
         ofstream file("data.csv");
         if (file.is_open()) {
             for (const Account &acc : accounts) {
-                file << acc.phone << "," << acc.pin << "," << acc.balance << endl;
+                file << acc.phone << "," << acc.pin << "," << acc.balance.number << endl;
             }
             file.close();
         } else {
@@ -108,10 +109,10 @@ public:
             Account acc(phone, pin);
     
             try {
-                acc.balance = stoi(balance_str);
+                acc.balance = BigInt(balance_str);
             } catch (...) {
                 cout << "Invalid balance for phone " << phone << ", setting balance to 0." << endl;
-                acc.balance = 0;
+                acc.balance = BigInt("0");
             }
     
             accounts.push_back(acc);
@@ -165,7 +166,7 @@ void QuickCash:: display(){
     cout<<"                                                                  |                         |"<<endl;
     cout<<"                                                                   -------------------------"<<endl;
     string n;
-    cout<<"                                                                     Dail USSD code:";cin>>n;
+    cout<<"                                                                     Dial USSD code:";cin>>n;
     if(n=="*147#"){
         cout<<endl;
         mainMenu();
@@ -187,7 +188,7 @@ void QuickCash::SignUp() {
     for (auto &acc : accounts) {
         if (acc.phone == phone) {
             cout << endl;
-            cout << "Phone Number already registered! try diffrent number\n";
+            cout << "Phone Number already registered! try diffrent number!\n\n";
             SignUp();
             return;
         }
@@ -203,13 +204,12 @@ void QuickCash::SignUp() {
 
     string hashed = hash_pin(pin);
     Account user(phone, hashed);
-    user.balance=100;    
+    user.balance = BigInt("100");    
     accounts.push_back(user);
     save_accounts_to_file();
     cout << endl;
     cout << "Account Created Successfully!\n";
 }
-
 
 
 
@@ -259,7 +259,7 @@ void QuickCash::Exit(){
 
 void QuickCash::sendMoney(Account &user) {
     string phone;
-    int amount;
+    BigInt amount;
     cout << "Enter Recipient Phone: ";
     cin >> phone;
 
@@ -287,7 +287,7 @@ void QuickCash::sendMoney(Account &user) {
     for (auto &acc : accounts) {
         if (acc.phone == phone) {
             cout << "Enter Amount: ";
-            cin >> amount;
+            cin >> amount.number;
             if (user.balance >= amount) {
                 user.balance -= amount;
                 acc.balance += amount;
@@ -309,19 +309,19 @@ void QuickCash::sendMoney(Account &user) {
 
 
 void QuickCash::cashIn(Account &user) {
-    int amount;
+    BigInt amount;
     cout << "Enter Amount to Cash In: ";
-    cin >> amount;
+    cin >> amount.number;
 
-    while (amount <= 0) {
+    while (amount <= BigInt("0")) {
         cout << "\nInvalid amount!\n\nPlease enter a positive amount: ";
-        cin >> amount;
+        cin >> amount.number;
         //return;
     }
 
     user.balance += amount;
     cout << endl;
-    cout << "Cash In Successful! New Balance: " << user.balance << " TK\n";
+    cout << "Cash In Successful! New Balance: " << user.balance.number << " TK\n";
     save_accounts_to_file();
 }
 
@@ -329,17 +329,17 @@ void QuickCash::cashIn(Account &user) {
 
 void QuickCash::cashOut(Account &user) {
     string phone_number;
-    long long int amount;
+    BigInt amount;
     
     cout << "Enter Quick Cash Agent number: ";
     cin >> phone_number;
     cin.ignore();
 
     cout << "Enter Amount to Cash Out: ";
-    cin >> amount;
+    cin >> amount.number;
     cin.ignore();
 
-    if (amount <= 0) {
+    if (amount <= BigInt("0")) {
         cout << "\nInvalid amount!\n";
         return;
     }
@@ -348,7 +348,7 @@ void QuickCash::cashOut(Account &user) {
         user.balance -= amount;
         cout << "\nCash Out Successful!\n";
         cout << "Agent: " << phone_number << "\n";
-        cout << "Amount: " << amount << " TK\n";
+        cout << "Amount: " << amount.number << " TK\n";
         save_accounts_to_file();
     } else {
         cout << "\nInsufficient Balance!\n";
@@ -357,25 +357,32 @@ void QuickCash::cashOut(Account &user) {
 
 
 
-
 void QuickCash::MobileRecharge() {
     cout<<endl;
     cout << "Please Wait! the feature is Coming soon.\n";
 }
+
+
 
 void QuickCash::Payment() {
     cout<<endl;
     cout << "Please Wait! the feature is Coming soon.\n";
 }
 
+
+
 void QuickCash::MyQuickCash() {
     cout<<endl;
     cout << "Please Wait! the feature is Coming soon.\n";
 }
 
+
+
 void QuickCash::log_out() {
     mainMenu();
 }
+
+
 
 void QuickCash::userMenu(Account &user) {
     while (true) {
