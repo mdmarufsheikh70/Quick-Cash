@@ -6,33 +6,34 @@
 #include <vector>
 #include <cstdlib>
 #include <fstream>
-#include <string> 
+#include <string>
 using namespace std;
 
+class Account
+{
+public:
+    string phone;
+    string pin;
+    BigInt balance;
 
+    Account(string p, string hashed_pin)
+    {
+        phone = p;
+        pin = hashed_pin;
+        balance = BigInt("0");
+    }
 
-class Account {
-    public:
-        string phone;
-        string pin;
-        BigInt balance;
-    
-        Account(string p, string hashed_pin) {
-            phone = p;
-            pin = hashed_pin;
-            balance = BigInt("0");
-        }
-    
-        bool check_pin(const string& input_pin) {
-            return pin == picosha2::hash256_hex_string(input_pin);
-        }
-    };
+    bool check_pin(const string &input_pin)
+    {
+        return pin == picosha2::hash256_hex_string(input_pin);
+    }
+};
 
-
-
-class QuickCash {
+class QuickCash
+{
 private:
     vector<Account> accounts;
+
 public:
     void mainMenu();
     void display();
@@ -43,150 +44,183 @@ public:
     void sendMoney(Account &user);
     void cashIn(Account &user);
     void cashOut(Account &user);
-    void MobileRecharge();
-    void Payment();
-    void MyQuickCash();
+    void MobileRecharge(Account &user);
+    void Payment(Account &user);
+    void MyQuickCash(Account &user);
     void log_out();
 
-
- 
-    bool is_valid_pin(const string& pin) {
-        if (pin.length() != 4) {
+    bool is_valid_pin(const string &pin)
+    {
+        if (pin.length() != 4)
+        {
             return false;
         }
 
-        for (char c : pin) {
-        if (!isdigit(c)) {
-            return false;
-        }
+        for (char c : pin)
+        {
+            if (!isdigit(c))
+            {
+                return false;
+            }
 
+        }
         return true;
-        }
     }
-    
-    string hash_pin(const string& pin) {
+
+    string hash_pin(const string &pin)
+    {
         return picosha2::hash256_hex_string(pin);
     }
 
-
-
-    void save_accounts_to_file() {
+    void save_accounts_to_file()
+    {
         ofstream file("data.csv");
-        if (file.is_open()) {
-            for (const Account &acc : accounts) {
+        if (file.is_open())
+        {
+            for (const Account &acc : accounts)
+            {
                 file << acc.phone << "," << acc.pin << "," << acc.balance.number << endl;
             }
             file.close();
-        } else {
+        }
+        else
+        {
             cout << "Error: Unable to open file for writing.\n";
         }
     }
-    
 
-
-    void load_accounts_from_file() {
+    void load_accounts_from_file()
+    {
         ifstream file("data.csv");
-    
-        if (!file.is_open()) {
+
+        if (!file.is_open())
+        {
             cout << "Error: Couldn't open data.csv file." << endl;
             return;
         }
-    
+
         string line;
-        while (getline(file, line)) {
+        while (getline(file, line))
+        {
             stringstream ss(line);
             string phone, pin, balance_str;
-    
+
             getline(ss, phone, ',');
             getline(ss, pin, ',');
             getline(ss, balance_str, ',');
-    
-            if (phone.empty() || pin.empty() || balance_str.empty()) {
+
+            if (phone.empty() || pin.empty() || balance_str.empty())
+            {
                 cout << "Skipping invalid line: " << line << endl;
                 continue;
             }
-    
+
             Account acc(phone, pin);
-    
-            try {
+
+            try
+            {
                 acc.balance = BigInt(balance_str);
-            } catch (...) {
+            }
+            catch (...)
+            {
                 cout << "Invalid balance for phone " << phone << ", setting balance to 0." << endl;
                 acc.balance = BigInt("0");
             }
-    
+
             accounts.push_back(acc);
         }
-    
+
         file.close();
     }
+
+
+
+    void GP(Account &user);
+    void Robi(Account &user);
+    void Airtel(Account &user);
+    void Teletalk(Account &user);
+    void Banglalink(Account &user);
+
+
+
+    void pin_reset(Account &user);
+    void check_balance(Account &user);
+    void account_deletion(Account &user);
+    void customer_sopport(Account &user);
 };
 
-
-
-void QuickCash :: mainMenu() {
-    while (true) {
+void QuickCash ::mainMenu()
+{
+    while (true)
+    {
         int choice;
         cout << "\n=== Main Menu ===\n";
-        cout << "1. SignUp"<<endl;
-        cout << "2. SignIn"<<endl;
-        cout << "3. Exit"<<endl;
-        cout<<"Enter your choice: ";
+        cout << "1. SignUp" << endl;
+        cout << "2. SignIn" << endl;
+        cout << "3. Exit" << endl;
+        cout << "Enter your choice: ";
         cin >> choice;
-        switch (choice) {
-            case 1: SignUp();
+        switch (choice)
+        {
+        case 1:
+            SignUp();
             break;
-            case 2: SignIn();
+        case 2:
+            SignIn();
             break;
-            case 3: Exit();
-            default: cout << "Invalid choice, try again!\n";
+        case 3:
+            Exit();
+        default:
+            cout << "Invalid choice, try again!\n";
         }
     }
 }
 
-
-
-void QuickCash:: display(){
-    cout<<endl;
-    cout<<endl;
-    cout<<endl;
-    cout<<"                                                                     Welcome to quick cash"         <<endl;
-    cout<<"                                                                   -------------------------"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  | 1          2          3 |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  | 4          5          6 |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  | 7          8          9 |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                  | *          0          # |"<<endl;
-    cout<<"                                                                  |                         |"<<endl;
-    cout<<"                                                                   -------------------------"<<endl;
+void QuickCash::display()
+{
+    cout << endl;
+    cout << endl;
+    cout << endl;
+    cout << "                                                                     Welcome to quick cash" << endl;
+    cout << "                                                                   -------------------------" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  | 1          2          3 |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  | 4          5          6 |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  | 7          8          9 |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                  | *          0          # |" << endl;
+    cout << "                                                                  |                         |" << endl;
+    cout << "                                                                   -------------------------" << endl;
     string n;
-    cout<<"                                                                     Dial USSD code:";cin>>n;
-    if(n=="*147#"){
-        cout<<endl;
+    cout << "                                                                     Dial USSD code:";
+    cin >> n;
+    if (n == "*147#")
+    {
+        cout << endl;
         mainMenu();
-        cout<<endl;
+        cout << endl;
     }
-    else{
+    else
+    {
         cout << "=== Invalid USSD ===";
     }
 }
 
-
-
-void QuickCash::SignUp() {
+void QuickCash::SignUp()
+{
     string phone, pin;
     cout << "Enter Phone Number: ";
     cin >> phone;
-    
 
-    for (auto &acc : accounts) {
-        if (acc.phone == phone) {
+    for (auto &acc : accounts)
+    {
+        if (acc.phone == phone)
+        {
             cout << endl;
             cout << "Phone Number already registered! try diffrent number!\n\n";
             SignUp();
@@ -197,45 +231,51 @@ void QuickCash::SignUp() {
     cout << "Enter a 4-digit PIN: ";
     cin >> pin;
 
-    while (!is_valid_pin(pin)) {
+    while (!is_valid_pin(pin))
+    {
         cout << "Invalid PIN! Please enter exactly 4 digits: ";
         cin >> pin;
     }
 
     string hashed = hash_pin(pin);
     Account user(phone, hashed);
-    user.balance = BigInt("100");    
+    user.balance = BigInt("100");
     accounts.push_back(user);
     save_accounts_to_file();
     cout << endl;
     cout << "Account Created Successfully!\n";
 }
 
-
-
-void QuickCash::SignIn() {
+void QuickCash::SignIn()
+{
     string phone, pin;
     cout << "Enter Phone Number: ";
     cin >> phone;
 
-    for (auto &acc : accounts) {
-        if (acc.phone == phone) {
+    for (auto &acc : accounts)
+    {
+        if (acc.phone == phone)
+        {
             int chance = 5;
-            while (chance > 0) {
+            while (chance > 0)
+            {
                 cout << "Enter a 4-digit PIN: ";
                 cin >> pin;
 
-                if (acc.check_pin(pin)) {
+                if (acc.check_pin(pin))
+                {
                     cout << "\nSign In Successful!\n";
                     userMenu(acc);
                     return;
-                } else {
+                }
+                else
+                {
                     chance--;
                     cout << "Wrong password! ";
                     if (chance > 0)
                         cout << "Tries left: " << chance << endl;
                     else
-                        cout << "No more tries left. Access denied.\n";
+                        cout << "\nNo more tries left. Access denied.\n";
                 }
             }
             return;
@@ -246,55 +286,63 @@ void QuickCash::SignIn() {
     SignIn();
 }
 
-
-
-void QuickCash::Exit(){
-    cout<<endl;
+void QuickCash::Exit()
+{
+    cout << endl;
     cout << "Thank you for being with Quick Cash\n";
-    cout<<endl;
-    exit(0); 
+    cout << endl;
+    exit(0);
 }
 
-
-
-void QuickCash::sendMoney(Account &user) {
+void QuickCash::sendMoney(Account &user)
+{
     string phone;
     BigInt amount;
     cout << "Enter Recipient Phone: ";
     cin >> phone;
 
-    if (user.phone == phone) {
+    if (user.phone == phone)
+    {
         cout << "\nYou cannot send money to yourself!\n\nWhat you want?\n";
-        cout << "1. Cash IN"<<endl;
-        cout << "2. Send Money"<<endl;
-        cout << "3. Exit"<<endl;
-        cout<<"Enter your choice: ";
+        cout << "1. Cash IN" << endl;
+        cout << "2. Send Money" << endl;
+        cout << "3. Exit" << endl;
+        cout << "Enter your choice: ";
         int choice;
         cin >> choice;
         switch (choice)
         {
-        case 1: cashIn(user);  
+        case 1:
+            cashIn(user);
             userMenu(user);
-        case 2: sendMoney(user);
+        case 2:
+            sendMoney(user);
             userMenu(user);
-        case 3: Exit();
+        case 3:
+            Exit();
             break;
-        default: mainMenu();
+        default:
+            mainMenu();
             userMenu(user);
         }
     }
 
-    for (auto &acc : accounts) {
-        if (acc.phone == phone) {
+    for (auto &acc : accounts)
+    {
+        if (acc.phone == phone)
+        {
             cout << "Enter Amount: ";
             cin >> amount.number;
-            if (user.balance >= amount) {
+            if (user.balance >= amount)
+            {
                 user.balance -= amount;
                 acc.balance += amount;
                 save_accounts_to_file();
                 cout << endl;
                 cout << "Money Sent Successfully!\n";
-            } else {
+            }
+            else
+            {
                 cout << endl;
                 cout << "Insufficient Balance!\n";
             }
@@ -306,17 +354,17 @@ void QuickCash::sendMoney(Account &user) {
     sendMoney(user);
 }
 
-
-
-void QuickCash::cashIn(Account &user) {
+void QuickCash::cashIn(Account &user)
+{
     BigInt amount;
     cout << "Enter Amount to Cash In: ";
     cin >> amount.number;
 
-    while (amount <= BigInt("0")) {
+    while (amount <= BigInt("0"))
+    {
         cout << "\nInvalid amount!\n\nPlease enter a positive amount: ";
         cin >> amount.number;
-        //return;
+        // return;
     }
 
     user.balance += amount;
@@ -325,12 +373,11 @@ void QuickCash::cashIn(Account &user) {
     save_accounts_to_file();
 }
 
-
-
-void QuickCash::cashOut(Account &user) {
+void QuickCash::cashOut(Account &user)
+{
     string phone_number;
     BigInt amount;
-    
+
     cout << "Enter Quick Cash Agent number: ";
     cin >> phone_number;
     cin.ignore();
@@ -339,80 +386,451 @@ void QuickCash::cashOut(Account &user) {
     cin >> amount.number;
     cin.ignore();
 
-    if (amount <= BigInt("0")) {
+    if (amount <= BigInt("0"))
+    {
         cout << "\nInvalid amount!\n";
         return;
     }
 
-    if (user.balance >= amount) {
+    if (user.balance >= amount)
+    {
         user.balance -= amount;
         cout << "\nCash Out Successful!\n";
-        cout << "Agent: " << phone_number << "\n";
+        cout << "Agent No: " << phone_number << "\n";
         cout << "Amount: " << amount.number << " TK\n";
         save_accounts_to_file();
-    } else {
+    }
+    else
+    {
         cout << "\nInsufficient Balance!\n";
     }
 }
 
 
 
-void QuickCash::MobileRecharge() {
-    cout<<endl;
-    cout << "Please Wait! the feature is Coming soon.\n";
+void QuickCash::GP(Account &user) {
+    string phone;
+    BigInt amount;
+
+    cout << "Enter Grameenphone  number: ";
+    cin >> phone;
+
+    
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '7'&& phone.length()==3)
+        {
+            cout << "Enter Recharge Amount: ";
+            cin >> amount.number;
+            if (user.balance >= amount)
+            {
+                user.balance -= amount;
+                save_accounts_to_file();
+                cout << endl;
+                cout << "Mobile reacharge Successfully!\n";
+            }
+            else
+            {
+                cout << endl;
+                cout << "Insufficient Balance!\n";
+            }
+            return;
+        }
+    
+    cout << endl;
+    cout << "Invaild Grameenphone number!";
+    cout << endl;
+    userMenu(user);
 }
 
 
 
-void QuickCash::Payment() {
-    cout<<endl;
-    cout << "Please Wait! the feature is Coming soon.\n";
+void QuickCash::Robi(Account &user) {
+    string phone;
+    BigInt amount;
+
+    cout << "Enter Robi  number: ";
+    cin >> phone;
+
+    
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '8'&& phone.length()==3)
+        {
+            cout << "Enter Recharge Amount: ";
+            cin >> amount.number;
+            if (user.balance >= amount)
+            {
+                user.balance -= amount;
+                save_accounts_to_file();
+                cout << endl;
+                cout << "Mobile recharge Successfully!\n";
+            }
+            else
+            {
+                cout << endl;
+                cout << "Insufficient Balance!\n";
+            }
+            return;
+        }
+    
+    cout << endl;
+    cout << "Invaild Robi number!";
+    cout << endl;
+    userMenu(user);
 }
 
 
 
-void QuickCash::MyQuickCash() {
-    cout<<endl;
-    cout << "Please Wait! the feature is Coming soon.\n";
+void QuickCash::Airtel(Account &user) {
+    string phone;
+    BigInt amount;
+
+    cout << "Enter Airtel  number: ";
+    cin >> phone;
+
+    
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '6'&& phone.length()==3)
+        {
+            cout << "Enter Recharge Amount: ";
+            cin >> amount.number;
+            
+            if (user.balance >= amount)
+            {
+                user.balance -= amount;
+                save_accounts_to_file();
+                cout << endl;
+                cout << "Mobile recharge Successfully!\n";
+            }
+            else
+            {
+                cout << endl;
+                cout << "Insufficient Balance!\n";
+            }
+            return;
+        }
+    
+    cout << endl;
+    cout << "Invaild Airtel number!";
+    cout << endl;
+    userMenu(user);
 }
 
 
 
-void QuickCash::log_out() {
+void QuickCash::Teletalk(Account &user) {
+    string phone;
+    BigInt amount;
+
+    cout << "Enter Teletalk  number: ";
+    cin >> phone;
+
+    
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '5'&& phone.length()==3)
+        {
+            cout << "Enter Recharge Amount: ";
+            cin >> amount.number;
+            if (user.balance >= amount)
+            {
+                user.balance -= amount;
+                save_accounts_to_file();
+                cout << endl;
+                cout << "Mobile recharge Successfully!\n";
+            }
+            else
+            {
+                cout << endl;
+                cout << "Insufficient Balance!\n";
+            }
+            return;
+        }
+    
+    cout << endl;
+    cout << "Invaild Teletalk number!";
+    cout << endl;
+    userMenu(user);
+}
+
+
+
+void QuickCash::Banglalink(Account &user) {
+    string phone;
+    BigInt amount;
+
+    cout << "Enter Banglalink  number: ";
+    cin >> phone;
+
+    
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '9'&& phone.length()==3)
+        {
+            cout << "Enter Recharge Amount: ";
+            cin >> amount.number;
+
+            if (user.balance >= amount)
+            {
+                user.balance -= amount;
+                save_accounts_to_file();
+                cout << endl;
+                cout << "Mobile recharge Successfully!\n";
+            }
+            else
+            {
+                cout << endl;
+                cout << "Insufficient Balance!\n";
+            }
+            return;
+        }
+    
+    cout << endl;
+    cout << "Invaild Banglalink number!";
+    cout << endl;
+    userMenu(user);
+}
+
+
+
+void QuickCash::MobileRecharge(Account &user)
+{
+
+    cout << "1. GP" << endl;
+    cout << "2. Robi" << endl;
+    cout << "3. Airtel" << endl;
+    cout << "4. Teletalk" << endl;
+    cout << "5. Banglalink" << endl;
+    cout << "Enter your choice: ";
+    
+    int choice;
+    cin >> choice;
+
+    switch (choice)
+    {
+    case 1:
+        GP(user);
+        userMenu(user);
+    case 2:
+        Robi(user);
+        userMenu(user);
+    case 3:
+        Airtel(user);
+        userMenu(user);
+    case 4:
+        Teletalk(user);
+        userMenu(user);
+    case 5:
+        Banglalink(user);
+        userMenu(user);
+    default:
+        userMenu(user);
+    }
+}
+
+
+
+void QuickCash::Payment(Account &user)
+{
+    string phone_number;
+    BigInt amount;
+
+    cout << "Enter Merchantile QC account number: ";
+    cin >> phone_number;
+    cin.ignore();
+
+    cout << "Enter Amount: ";
+    cin >> amount.number;
+    cin.ignore();
+
+    if (amount <= BigInt("0"))
+    {
+        cout << "\nInvalid amount!\n";
+        return;
+    }
+
+    if (user.balance >= amount) {
+        user.balance -= amount;
+        cout << "\nPayment Successful!\n";
+        cout << "Merchantile No: " << phone_number << "\n";
+        cout << "Amount: " << amount.number << " TK\n";
+        save_accounts_to_file();
+    }
+    else {
+        cout << "\nInsufficient Balance!" << endl;
+    }
+    userMenu(user);
+}
+
+
+
+void QuickCash::pin_reset(Account &user){
+    string current_pin;
+    string new_pin;
+    string verify_new_pin;
+
+    cout << "Enter current pin: ";
+    cin >> current_pin;
+    cin.ignore();
+
+    if(hash_pin(current_pin) == user.pin) {
+
+        while (1) {
+
+            cout << "Enter a 4-digit new PIN: ";
+            cin >> new_pin;
+        
+            while (!is_valid_pin(new_pin))
+            {
+                cout << "Invalid PIN! Please enter exactly 4 digits: ";
+                cin >> new_pin;
+            }
+    
+            cin.ignore();
+
+            cout << "Enter new pin again: ";
+            cin >> verify_new_pin;
+    
+            if(new_pin == verify_new_pin){
+
+                user.pin = hash_pin(new_pin);
+    
+                cout << "\nPin Reset successful!" << endl;
+                save_accounts_to_file();
+                return;
+            }
+            else {
+                cout << "PIN Not Matching!" <<endl;
+                
+            }
+        }
+    }
+    else {
+        cout << " Invalid PIN!" << endl;
+        pin_reset(user);
+    }
+
+}
+
+
+
+void QuickCash::check_balance(Account &user) {
+    cout << "\n!Your current Balance: " << user.balance << "Tk" << endl;
+    userMenu(user);
+}
+
+
+
+void QuickCash::account_deletion(Account &user) {
+    cout << "Are you sure Y/N: " << endl;
+    string decition;
+    cin >> decition;
+    if(decition == "Y") {
+        for (size_t i = 0; i < accounts.size(); ++i) {
+            if (accounts[i].phone == user.phone) {
+                accounts.erase(accounts.begin() + i);
+                save_accounts_to_file();
+                cout << "\nAccount deleted successfully!\n";
+                return; 
+            }
+        }
+        cout << "\nAccount not found!\n";
+    }
+    else {
+        cout<<"\nOkey!" << endl;
+    }
+    
+}
+
+
+
+void QuickCash::customer_sopport(Account &user) {
+    cout << "\n       === Customer Sopport ===\n";
+    cout << "Please, Write your objection or any issu: ";
+    string objection;
+    cin.ignore();
+    getline(cin, objection);
+    cout<<"\n!we are recived a messege from account number "<<user.phone<<endl;
+    cout << "      Thank you for being with Quick Cash\n"<< endl;
+    userMenu(user);
+}
+
+
+
+void QuickCash::MyQuickCash(Account &user)
+{
+    cout << "1. Pin Reset" << endl;
+    cout << "2. Check Balance" << endl;
+    cout << "3. Account Deletion" << endl;
+    cout << "4. Customer sopport" << endl;
+    cout << "5. Exit" <<endl;
+    cout << "Enter your choice: ";
+    
+    int choice;
+    cin >> choice;
+    switch (choice)
+    {
+    case 1:
+        pin_reset(user);
+        userMenu(user);
+    case 2:
+        check_balance(user);
+        userMenu(user);
+    case 3:
+        account_deletion(user);
+        userMenu(user);
+    case 4:
+        customer_sopport(user);
+        userMenu(user);
+    case 5:
+        Exit();
+        userMenu(user);
+    default:
+        userMenu(user);
+    }
+}
+
+
+
+void QuickCash::log_out()
+{
     mainMenu();
 }
 
 
 
-void QuickCash::userMenu(Account &user) {
-    while (true) {
+void QuickCash::userMenu(Account &user)
+{
+    while (true)
+    {
         int choice;
         cout << "\n=== User Menu ===\n";
-        cout << "1. Send Money"<<endl;
-        cout << "2. Cash IN"<<endl;
-        cout << "3. Cash Out"<<endl;
-        cout << "4. MobileRecharge "<<endl;
-        cout << "5. Payment"<<endl;
-        cout << "6. My Quick Cash"<<endl;
-        cout << "7. Log Out"<<endl;
-        cout<<"Enter your choice: ";
+        cout << "1. Send Money" << endl;
+        cout << "2. Cash IN" << endl;
+        cout << "3. Cash Out" << endl;
+        cout << "4. MobileRecharge " << endl;
+        cout << "5. Payment" << endl;
+        cout << "6. My Quick Cash" << endl;
+        cout << "7. Log Out" << endl;
+        cout << "Enter your choice: ";
         cin >> choice;
 
-        switch (choice) {
-            case 1: sendMoney(user);
+        switch (choice)
+        {
+        case 1:
+            sendMoney(user);
             break;
-            case 2: cashIn(user);
+        case 2:
+            cashIn(user);
             break;
-            case 3: cashOut(user);
+        case 3:
+            cashOut(user);
             break;
-            case 4: MobileRecharge();
+        case 4:
+            MobileRecharge(user);
             break;
-            case 5: Payment();
+        case 5:
+            Payment(user);
             break;
-            case 6: MyQuickCash();
+        case 6:
+            MyQuickCash(user);
             break;
-            case 7: log_out();
-            default: cout << "Invalid choice, try again!\n";
+        case 7:
+            log_out();
+        default:
+            cout << "Invalid choice, try again!\n";
         }
     }
 }
