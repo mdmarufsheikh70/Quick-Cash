@@ -195,7 +195,7 @@ void QuickCash::display()
     cout << "                                                                  |                         |" << endl;
     cout << "                                                                  | *          0          # |" << endl;
     cout << "                                                                  |                         |" << endl;
-    cout << "                                                                   -------------------------" << endl;
+    cout << "                                                                   -------------------------" <<  endl;
     string n;
     cout << "                                                                     Dial USSD code:";
     cin >> n;
