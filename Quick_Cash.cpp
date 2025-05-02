@@ -51,7 +51,7 @@ public:
 
     bool is_valid_pin(const string &pin)
     {
-        if (pin.length() != 4)
+        if (pin.length() != 5)
         {
             return false;
         }
@@ -195,7 +195,7 @@ void QuickCash::display()
     cout << "                                                                  |                         |" << endl;
     cout << "                                                                  | *          0          # |" << endl;
     cout << "                                                                  |                         |" << endl;
-    cout << "                                                                   -------------------------" <<  endl;
+    cout << "                                                                   -------------------------" << endl;
     string n;
     cout << "                                                                     Dial USSD code:";
     cin >> n;
@@ -228,12 +228,12 @@ void QuickCash::SignUp()
         }
     }
 
-    cout << "Enter a 4-digit PIN: ";
+    cout << "Enter a 5-digit PIN: ";
     cin >> pin;
 
     while (!is_valid_pin(pin))
     {
-        cout << "Invalid PIN! Please enter exactly 4 digits: ";
+        cout << "Invalid PIN! Please enter exactly 5 digits: ";
         cin >> pin;
     }
 
@@ -259,7 +259,7 @@ void QuickCash::SignIn()
             int chance = 5;
             while (chance > 0)
             {
-                cout << "Enter a 4-digit PIN: ";
+                cout << "Enter a 5-digit PIN: ";
                 cin >> pin;
 
                 if (acc.check_pin(pin))
@@ -669,12 +669,12 @@ void QuickCash::pin_reset(Account &user){
 
         while (1) {
 
-            cout << "Enter a 4-digit new PIN: ";
+            cout << "Enter a 5-digit new PIN: ";
             cin >> new_pin;
         
             while (!is_valid_pin(new_pin))
             {
-                cout << "Invalid PIN! Please enter exactly 4 digits: ";
+                cout << "Invalid PIN! Please enter exactly 5 digits: ";
                 cin >> new_pin;
             }
     
