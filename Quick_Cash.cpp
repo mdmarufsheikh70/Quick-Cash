@@ -304,7 +304,7 @@ void QuickCash::sendMoney(Account &user)
     if (user.phone == phone)
     {
         cout << "\nYou cannot send money to yourself!\n\nWhat you want?\n";
-        cout << "1. Cash IN" << endl;
+        cout << "1. Cash In(Bank)" << endl;
         cout << "2. Send Money" << endl;
         cout << "3. Exit" << endl;
         cout << "Enter your choice: ";
@@ -322,7 +322,6 @@ void QuickCash::sendMoney(Account &user)
             Exit();
             break;
         default:
-            mainMenu();
             userMenu(user);
         }
     }
@@ -356,9 +355,19 @@ void QuickCash::sendMoney(Account &user)
 
 void QuickCash::cashIn(Account &user)
 {
-    BigInt amount;
-    cout << "Enter Amount to Cash In: ";
-    cin >> amount.number;
+    BigInt bank_account;
+    BigInt  bank_password;
+    BigInt otp;
+    cout << "Enter Bank account number: ";
+    cin >> bank_account.number;
+    cout << "Enter password: ";
+    cin >> bank_password.number;
+    cout << "Enter 6 digit OTP: ";
+    cin >> otp.number;
+    if (otp.number.length() == 6) {
+        BigInt amount;
+        cout << "Enter Amount to Cash In: ";
+        cin >> amount.number;
 
     while (amount <= BigInt("0"))
     {
@@ -367,10 +376,12 @@ void QuickCash::cashIn(Account &user)
         // return;
     }
 
-    user.balance += amount;
-    cout << endl;
-    cout << "Cash In Successful! New Balance: " << user.balance.number << " TK\n";
-    save_accounts_to_file();
+        user.balance += amount;
+        cout << endl;
+        cout << "Cash In Successful! New Balance: " << user.balance.number << " TK\n";
+        save_accounts_to_file();
+    }
+    
 }
 
 void QuickCash::cashOut(Account &user)
@@ -635,8 +646,7 @@ void QuickCash::Payment(Account &user)
     cin >> amount.number;
     cin.ignore();
 
-    if (amount <= BigInt("0"))
-    {
+    if (amount <= BigInt("0")) {
         cout << "\nInvalid amount!\n";
         return;
     }
@@ -760,8 +770,7 @@ void QuickCash::MyQuickCash(Account &user)
     
     int choice;
     cin >> choice;
-    switch (choice)
-    {
+    switch (choice) {
     case 1:
         pin_reset(user);
         userMenu(user);
@@ -798,8 +807,8 @@ void QuickCash::userMenu(Account &user)
         int choice;
         cout << "\n=== User Menu ===\n";
         cout << "1. Send Money" << endl;
-        cout << "2. Cash IN" << endl;
-        cout << "3. Cash Out" << endl;
+        cout << "2. Cash Out" << endl;
+        cout << "3. Cash In (Bank)" << endl;
         cout << "4. MobileRecharge " << endl;
         cout << "5. Payment" << endl;
         cout << "6. My Quick Cash" << endl;
@@ -813,10 +822,10 @@ void QuickCash::userMenu(Account &user)
             sendMoney(user);
             break;
         case 2:
-            cashIn(user);
+            cashOut(user);
             break;
         case 3:
-            cashOut(user);
+            cashIn(user);
             break;
         case 4:
             MobileRecharge(user);
@@ -831,6 +840,7 @@ void QuickCash::userMenu(Account &user)
             log_out();
         default:
             cout << "Invalid choice, try again!\n";
+            mainMenu();
         }
     }
 }
@@ -838,8 +848,8 @@ void QuickCash::userMenu(Account &user)
 
 
 int main() {
-    QuickCash system;
-    system.load_accounts_from_file();
-    system.display();
+    QuickCash System;
+    System.load_accounts_from_file();
+    System.display();
     return 0;
 }
