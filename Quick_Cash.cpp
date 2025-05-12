@@ -25,8 +25,12 @@ public:
 
     bool check_pin(const string &input_pin)
     {
-        return pin == picosha2::hash256_hex_string(input_pin);
+        string temp = input_pin;
+        transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+        string salted = "QC_SALT_" + temp;
+        return pin == picosha2::hash256_hex_string(salted);
     }
+
 };
 
 class QuickCash
@@ -69,11 +73,25 @@ public:
 
     string hash_pin(const string &pin)
     {
-        return picosha2::hash256_hex_string(pin);
+        string temp = pin;
+        transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+        string salted = "QC_SALT_" + temp;
+        return picosha2::hash256_hex_string(salted);
     }
+
 
     void save_accounts_to_file()
     {
+    // Backup first
+        ifstream src("data.csv", ios::binary);
+        ofstream backup("backup.csv", ios::binary);
+            if (src && backup)
+        {
+            backup << src.rdbuf();
+        }
+        src.close();
+        backup.close();
+
         ofstream file("data.csv");
         if (file.is_open())
         {
@@ -81,13 +99,14 @@ public:
             {
                 file << acc.phone << "," << acc.pin << "," << acc.balance.number << endl;
             }
-            file.close();
+        file.close();
         }
-        else
+    else
         {
             cout << "Error: Unable to open file for writing.\n";
         }
     }
+
 
     void load_accounts_from_file()
     {
@@ -159,7 +178,12 @@ void QuickCash ::mainMenu()
         cout << "2. SignIn" << endl;
         cout << "3. Exit" << endl;
         cout << "Enter your choice: ";
-        cin >> choice;
+        while (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input! Numbers only: ";
+        }
+        
         switch (choice)
         {
         case 1:
@@ -216,6 +240,11 @@ void QuickCash::SignUp()
     string phone, pin;
     cout << "Enter Phone Number: ";
     cin >> phone;
+    while (phone.length() != 11 || phone.substr(0, 2) != "01") 
+    {
+        cout << "Invalid Bangladeshi phone number! Try again: ";
+        cin >> phone;
+    }
 
     for (auto &acc : accounts)
     {
@@ -427,7 +456,7 @@ void QuickCash::GP(Account &user) {
     cin >> phone;
 
     
-        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '7'&& phone.length()==3)
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '7'&& phone.length()==11)
         {
             cout << "Enter Recharge Amount: ";
             cin >> amount.number;
@@ -462,7 +491,7 @@ void QuickCash::Robi(Account &user) {
     cin >> phone;
 
     
-        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '8'&& phone.length()==3)
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '8'&& phone.length()==11)
         {
             cout << "Enter Recharge Amount: ";
             cin >> amount.number;
@@ -497,7 +526,7 @@ void QuickCash::Airtel(Account &user) {
     cin >> phone;
 
     
-        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '6'&& phone.length()==3)
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '6'&& phone.length()==11)
         {
             cout << "Enter Recharge Amount: ";
             cin >> amount.number;
@@ -533,7 +562,7 @@ void QuickCash::Teletalk(Account &user) {
     cin >> phone;
 
     
-        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '5'&& phone.length()==3)
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '5'&& phone.length()==11)
         {
             cout << "Enter Recharge Amount: ";
             cin >> amount.number;
@@ -568,7 +597,7 @@ void QuickCash::Banglalink(Account &user) {
     cin >> phone;
 
     
-        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '9'&& phone.length()==3)
+        if (phone[0] == '0'&& phone[1] == '1' && phone[2] == '9'&& phone.length()==11)
         {
             cout << "Enter Recharge Amount: ";
             cin >> amount.number;
@@ -614,20 +643,26 @@ void QuickCash::MobileRecharge(Account &user)
     case 1:
         GP(user);
         userMenu(user);
+        break;
     case 2:
         Robi(user);
         userMenu(user);
+        break;
     case 3:
         Airtel(user);
         userMenu(user);
+        break;
     case 4:
         Teletalk(user);
         userMenu(user);
+        break;
     case 5:
         Banglalink(user);
         userMenu(user);
+        break;
     default:
         userMenu(user);
+        break;
     }
 }
 
@@ -725,9 +760,9 @@ void QuickCash::check_balance(Account &user) {
 
 void QuickCash::account_deletion(Account &user) {
     cout << "Are you sure Y/N: " << endl;
-    string decition;
-    cin >> decition;
-    if(decition == "Y") {
+    string decision;
+    cin >> decision;
+    if(decision == "Y") {
         for (size_t i = 0; i < accounts.size(); ++i) {
             if (accounts[i].phone == user.phone) {
                 accounts.erase(accounts.begin() + i);
@@ -748,11 +783,11 @@ void QuickCash::account_deletion(Account &user) {
 
 void QuickCash::customer_sopport(Account &user) {
     cout << "\n       === Customer Sopport ===\n";
-    cout << "Please, Write your objection or any issu: ";
+    cout << "Please, Write your objection or any issue: ";
     string objection;
     cin.ignore();
     getline(cin, objection);
-    cout<<"\n!we are recived a messege from account number "<<user.phone<<endl;
+    cout<<"\n!we are recieved a messege from account number "<<user.phone<<endl;
     cout << "      Thank you for being with Quick Cash\n"<< endl;
     userMenu(user);
 }
@@ -774,20 +809,26 @@ void QuickCash::MyQuickCash(Account &user)
     case 1:
         pin_reset(user);
         userMenu(user);
+        break;
     case 2:
         check_balance(user);
         userMenu(user);
+        break;
     case 3:
         account_deletion(user);
         userMenu(user);
+        break;
     case 4:
         customer_sopport(user);
         userMenu(user);
+        break;
     case 5:
         Exit();
         userMenu(user);
+        break;
     default:
         userMenu(user);
+        break;
     }
 }
 
@@ -844,7 +885,6 @@ void QuickCash::userMenu(Account &user)
         }
     }
 }
-
 
 
 int main() {
