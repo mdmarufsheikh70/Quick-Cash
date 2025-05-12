@@ -85,8 +85,7 @@ public:
     // Backup first
         ifstream src("data.csv", ios::binary);
         ofstream backup("backup.csv", ios::binary);
-            if (src && backup)
-        {
+        if (src && backup) {
             backup << src.rdbuf();
         }
         src.close();
