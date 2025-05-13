@@ -164,7 +164,7 @@ public:
     void pin_reset(Account &user);
     void check_balance(Account &user);
     void account_deletion(Account &user);
-    void customer_sopport(Account &user);
+    void customer_support(Account &user);
 };
 
 void QuickCash ::mainMenu()
